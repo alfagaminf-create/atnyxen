@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ATNYXEN | Admin Control Suite</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Firebase Compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+  <style>
+    body { background-color: #060608; color: #e2e8f0; font-family: 'Space Grotesk', monospace; }
+    .cinzel { font-family: 'Cinzel', serif; }
+    .chrome-border { border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.08); }
+  </style>
+</head>
+<body class="min-h-screen p-4 sm:p-8 antialiased selection:bg-white selection:text-black">
+
+  <!-- ================= LOGIN LOCK SCREEN ================= -->
+  <div id="login-screen" class="fixed inset-0 z-50 bg-[#060608] flex items-center justify-center p-4">
+    <div class="w-full max-w-md p-8 bg-[#0f0f14] border border-white/15 rounded-2xl chrome-border shadow-2xl">
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 rounded-full bg-charcoal-800 border border-white/10 flex items-center justify-center mx-auto mb-3 text-white">
+          <i data-lucide="shield-check" class="w-6 h-6"></i>
+        </div>
+        <h2 class="cinzel text-2xl font-black text-white tracking-widest uppercase">ATNYXEN ADMIN</h2>
+        <p class="text-xs text-zinc-400 mt-1">Enter your private security credentials</p>
+      </div>
+
+      <form onsubmit="handleLogin(event)" class="space-y-4 text-xs font-mono">
+        <div>
+          <label class="block text-zinc-300 uppercase tracking-widest text-[10px] mb-1">Username</label>
+          <input type="text" id="login-user" required autocomplete="off" placeholder="Enter username" class="w-full px-3.5 py-2.5 bg-[#060608] border border-white/15 rounded text-white focus:outline-none focus:border-white transition" />
+        </div>
+        <div>
+          <label class="block text-zinc-300 uppercase tracking-widest text-[10px] mb-1">Password</label>
+          <input type="password" id="login-pass" required autocomplete="off" placeholder="Enter password" class="w-full px-3.5 py-2.5 bg-[#060608] border border-white/15 rounded text-white focus:outline-none focus:border-white transition" />
+        </div>
+
+        <div id="login-error" class="hidden p-2 rounded bg-red-950/40 border border-red-500/30 text-red-400 text-center text-[11px]">
+          ভুল ইউজারনেম বা পাসওয়ার্ড!
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-white text-black font-bold uppercase tracking-widest rounded text-xs hover:bg-zinc-200 transition">
+          Unlock Suite
+        </button>
+      </form>
+      <div class="mt-4 text-center">
+        <a href="index.html" class="text-xs text-zinc-500 hover:text-white underline">Back to Main Store</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MAIN ADMIN DASHBOARD ================= -->
+  <main id="admin-main" class="max-w-6xl mx-auto space-y-8 hidden">
+    
+    <!-- Top Bar -->
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-white/10 gap-4">
+      <div>
+        <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded bg-zinc-900 border border-white/10 text-[10px] text-zinc-400 font-mono tracking-wider">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> SYSTEM SECURE • PRODUCT MANAGER
+        </div>
+        <h1 class="cinzel text-3xl font-black text-white uppercase tracking-wider mt-1">ATNYXEN Studio</h1>
+      </div>
+      <div class="flex items-center gap-3 text-xs">
+        <a href="index.html" target="_blank" class="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-white/15 rounded text-white flex items-center gap-1.5 transition">
+          <i data-lucide="external-link" class="w-4 h-4"></i> View Live Store
+        </a>
+        <button onclick="logoutAdmin()" class="px-4 py-2 bg-red-950/40 hover:bg-red-900/60 border border-red-500/30 rounded text-red-400 flex items-center gap-1.5 transition">
+          <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+        </button>
+      </div>
+    </header>
+
+    <!-- Quick Channel Status -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+      <div class="p-3 rounded-xl bg-[#0f0f14] border border-pink-500/20 text-pink-300 flex items-center justify-between">
+        <span><i data-lucide="instagram" class="w-4 h-4 inline mr-1"></i> @ATNYXEN</span>
+        <a href="https://instagram.com/ATNYXEN" target="_blank" class="underline text-[11px]">Open</a>
+      </div>
+      <div class="p-3 rounded-xl bg-[#0f0f14] border border-emerald-500/20 text-emerald-300 flex items-center justify-between">
+        <span><i data-lucide="message-circle" class="w-4 h-4 inline mr-1"></i> 01317440591</span>
+        <span class="text-[10px] text-emerald-400">Line 1</span>
+      </div>
+      <div class="p-3 rounded-xl bg-[#0f0f14] border border-emerald-500/20 text-emerald-300 flex items-center justify-between">
+        <span><i data-lucide="phone" class="w-4 h-4 inline mr-1"></i> 01826444898</span>
+        <span class="text-[10px] text-emerald-400">Line 2</span>
+      </div>
+    </div>
+
+    <!-- Firebase Realtime Sync Config -->
+    <div class="p-4 rounded-xl bg-[#0f0f14] border border-white/10 text-xs font-mono space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="font-bold text-white flex items-center gap-1.5">
+          <i data-lucide="database" class="w-4 h-4 text-amber-400"></i> Cloud Firebase Synchronization
+        </span>
+        <span id="sync-status" class="text-[10px] text-emerald-400">Local + Browser Active</span>
+      </div>
+      <p class="text-[11px] text-zinc-400">If using live Firebase, paste your config JSON below. Otherwise leave blank for auto-sync.</p>
+      <div class="flex gap-2">
+        <input type="text" id="firebase-input" placeholder='{"apiKey":"...","databaseURL":"https://..."}' class="flex-grow px-3 py-1.5 bg-[#060608] border border-white/15 rounded text-white text-[11px] focus:outline-none" />
+        <button onclick="saveFirebaseConfig()" class="px-4 py-1.5 bg-white text-black font-bold uppercase rounded text-[10px]">Save Config</button>
+      </div>
+    </div>
+
+    <!-- Product Management Form Section -->
+    <section class="p-6 sm:p-8 rounded-2xl bg-[#0f0f14] border border-white/10 chrome-border space-y-6">
+      <div class="flex items-center justify-between border-b border-white/10 pb-4">
+        <div>
+          <h2 class="cinzel text-xl font-black text-white uppercase flex items-center gap-2">
+            <i data-lucide="package-plus" class="w-5 h-5 text-emerald-400"></i>
+            <span id="form-title">Upload New Article</span>
+          </h2>
+          <p class="text-xs text-zinc-400 mt-0.5">Custom Product Name & Unlimited Photo Upload Supported</p>
+        </div>
+        <button type="button" onclick="resetForm()" class="text-xs text-zinc-400 hover:text-white uppercase font-mono">Reset Form</button>
+      </div>
+
+      <form id="product-form" onsubmit="handleSaveProduct(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-xs font-mono">
+        <input type="hidden" id="prod-id" />
+
+        <!-- Custom Product Name -->
+        <div class="sm:col-span-2">
+          <label class="block text-white uppercase tracking-widest text-[11px] font-bold mb-1.5">
+            Product Name / Display Title (নিজে নাম লিখুন) *
+          </label>
+          <input type="text" id="prod-name" required placeholder="e.g. Spider Front & Back Special Cut or Oversized Fushiguro Drop" class="w-full px-4 py-3 bg-[#060608] border border-emerald-500/40 rounded-lg text-white focus:outline-none focus:border-emerald-400 text-sm font-semibold" />
+        </div>
+
+        <div>
+          <label class="block text-zinc-300 uppercase tracking-widest text-[10px] mb-1.5">Category *</label>
+          <select id="prod-category" required class="w-full px-3.5 py-2.5 bg-[#060608] border border-white/15 rounded-lg text-white focus:outline-none">
+            <option value="Oversized Fushiguro Hoodie">Oversized Fushiguro Hoodie</option>
+            <option value="Zipper Hoodie">Zipper Hoodie</option>
+            <option value="Henley">Henley</option>
+            <option value="Sweep T-Shirt">Sweep T-Shirt</option>
+            <option value="Spider Front/Back">Spider Front/Back</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-zinc-300 uppercase tracking-widest text-[10px] mb-1.5">Price in Taka (৳) *</label>
+          <input type="number" id="prod-price" required min="1" placeholder="450" class="w-full px-3.5 py-2.5 bg-[#060608] border border-white/15 rounded-lg text-white focus:outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-zinc-300 uppercase tracking-widest text-[10px] mb-1.5">Stock Available *</label>
+          <input type="number" id="prod-stock" required min="0" value="30" class="w-full px-3.5 py-2.5 bg-[#060608] border border-white/15 rounded-lg text-white focus:outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-zinc-300 uppercase tracking-widest text-[10px] mb-1.5">Available Sizes (Comma separated)</label>
+          <input type="text" id="prod-sizes" value="M, L, XL" class="w-full px-3.5 py-2.5 bg-[#060608] border border-white/15 rounded-lg text-white focus:outline-none" />
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="block text-zinc-300 uppercase tracking-widest text-[10px] mb-1.5">Color Options (Comma separated)</label>
+          <input type="text" id="prod-colors" placeholder="Black, Maroon, Charcoal Grey, Brown, White" class="w-full px-3.5 py-2.5 bg-[#060608] border border-white/15 rounded-lg text-white focus:outline-none" />
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="block text-zinc-300 uppercase tracking-widest text-[10px] mb-1.5">Designs / Variants (Comma separated)</label>
+          <input type="text" id="prod-designs" placeholder="Front Only, Full Spider Back, Daiendells, Silence" class="w-full px-3.5 py-2.5 bg-[#060608] border border-white/15 rounded-lg text-white focus:outline-none" />
+        </div>
+
+        <!-- UNLIMITED PHOTO UPLOAD -->
+        <div class="sm:col-span-2 p-4 rounded-xl bg-[#060608] border border-dashed border-white/20 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-white font-bold uppercase text-[11px] flex items-center gap-2">
+              <i data-lucide="image-plus" class="w-4 h-4 text-emerald-400"></i> Upload Unlimited Product Images
+            </span>
+            <span class="text-[10px] text-zinc-400">Select Multiple Files</span>
+          </div>
+
+          <input type="file" id="file-uploader" multiple accept="image/*" onchange="handleFiles(event)" class="w-full text-xs text-zinc-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 cursor-pointer" />
+
+          <!-- Photo Previews with Delete Button -->
+          <div id="staged-preview-container" class="flex flex-wrap gap-2.5 pt-2"></div>
+
+          <div>
+            <label class="block text-zinc-400 text-[10px] uppercase mb-1">Or Paste Image URLs (Comma-separated)</label>
+            <input type="text" id="prod-image-urls" placeholder="https://..., https://..." class="w-full px-3 py-2 bg-[#0f0f14] border border-white/10 rounded text-white focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="block text-zinc-300 uppercase tracking-widest text-[10px] mb-1.5">Description & Fabric Details</label>
+          <textarea id="prod-desc" rows="3" placeholder="Fleece GSM, collar construction, washing guide..." class="w-full px-3.5 py-2.5 bg-[#060608] border border-white/15 rounded-lg text-white focus:outline-none"></textarea>
+        </div>
+
+        <div class="sm:col-span-2 flex justify-end gap-3 pt-4 border-t border-white/10">
+          <button type="button" onclick="resetForm()" class="px-5 py-2.5 rounded-lg border border-white/15 text-zinc-400 hover:text-white uppercase">Cancel</button>
+          <button type="submit" class="px-8 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wider text-xs">Save & Publish to Live Store</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Catalog Management List -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="cinzel text-lg font-black text-white uppercase tracking-wider">Live Store Inventory</h3>
+        <span class="text-xs text-zinc-400">Total: <strong id="total-prods" class="text-white">0</strong></span>
+      </div>
+
+      <div id="inventory-list" class="space-y-3 font-mono text-xs"></div>
+    </section>
+
+    <!-- Customer Orders Tracker -->
+    <section class="space-y-4 pt-6 border-t border-white/10">
+      <div class="flex items-center justify-between">
+        <h3 class="cinzel text-lg font-black text-white uppercase tracking-wider">Customer Orders (Cash on Delivery)</h3>
+        <button onclick="clearOrders()" class="text-xs text-red-400 hover:underline">Clear Orders Log</button>
+      </div>
+
+      <div id="orders-list" class="space-y-3 font-mono text-xs"></div>
+    </section>
+
+  </main>
+
+  <script>
+    const USER_KEY = "alifa";
+    const PASS_KEY = "alifa13566";
+    let stagedPhotos = [];
+    let products = [];
+    let orders = [];
+
+    function checkAuth() {
+      if (sessionStorage.getItem("atnyxen_auth") === "true") {
+        document.getElementById("login-screen").classList.add("hidden");
+        document.getElementById("admin-main").classList.remove("hidden");
+        loadData();
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById("login-user").value.trim().toLowerCase();
+      const p = document.getElementById("login-pass").value.trim();
+
+      if (u === USER_KEY && p === PASS_KEY) {
+        sessionStorage.setItem("atnyxen_auth", "true");
+        document.getElementById("login-screen").classList.add("hidden");
+        document.getElementById("admin-main").classList.remove("hidden");
+        loadData();
+      } else {
+        document.getElementById("login-error").classList.remove("hidden");
+      }
+    }
+
+    function logoutAdmin() {
+      sessionStorage.removeItem("atnyxen_auth");
+      location.reload();
+    }
+
+    function loadData() {
+      products = JSON.parse(localStorage.getItem("atnyxen_products") || "[]");
+      orders = JSON.parse(localStorage.getItem("atnyxen_orders") || "[]");
+      renderInventory();
+      renderOrders();
+      lucide.createIcons();
+    }
+
+    function syncStore() {
+      localStorage.setItem("atnyxen_products", JSON.stringify(products));
+      renderInventory();
+      // Notify index.html if open
+      window.dispatchEvent(new Event("storage"));
+    }
+
+    function handleFiles(e) {
+      const files = Array.from(e.target.files);
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          stagedPhotos.push(evt.target.result);
+          renderStagedPhotos();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function removeStagedPhoto(idx) {
+      stagedPhotos.splice(idx, 1);
+      renderStagedPhotos();
+    }
+
+    function renderStagedPhotos() {
+      const container = document.getElementById("staged-preview-container");
+      container.innerHTML = stagedPhotos.map((src, i) => `
+        <div class="relative w-16 h-16 rounded-lg border border-white/20 bg-black overflow-hidden group">
+          <img src="${src}" class="w-full h-full object-cover" />
+          <button type="button" onclick="removeStagedPhoto(${i})" class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white w-4 h-4 rounded-full flex items-center justify-center text-[10px]">×</button>
+        </div>
+      `).join("");
+    }
+
+    function handleSaveProduct(e) {
+      e.preventDefault();
+      const id = document.getElementById("prod-id").value || ("prod-" + Date.now());
+      const name = document.getElementById("prod-name").value.trim();
+      const category = document.getElementById("prod-category").value;
+      const price = parseFloat(document.getElementById("prod-price").value);
+      const stock = parseInt(document.getElementById("prod-stock").value);
+      const sizes = document.getElementById("prod-sizes").value.split(",").map(s => s.trim()).filter(Boolean);
+      const colors = document.getElementById("prod-colors").value.split(",").map(c => c.trim()).filter(Boolean);
+      const designs = document.getElementById("prod-designs").value.split(",").map(d => d.trim()).filter(Boolean);
+      const desc = document.getElementById("prod-desc").value.trim();
+
+      const urlInput = document.getElementById("prod-image-urls").value.trim();
+      const urls = urlInput ? urlInput.split(",").map(u => u.trim()).filter(Boolean) : [];
+
+      let finalImages = [...stagedPhotos, ...urls];
+      if (!finalImages.length) {
+        finalImages = ["data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 450'><rect width='400' height='450' fill='%23111116'/><text x='200' y='225' font-family='sans-serif' font-size='16' fill='white' text-anchor='middle'>ATNYXEN ARTICLE</text></svg>"];
+      }
+
+      const item = { id, name, category, price, stock, sizes, colors, designs, description: desc, images: finalImages };
+      const idx = products.findIndex(p => p.id === id);
+
+      if (idx > -1) {
+        products[idx] = item;
+      } else {
+        products.unshift(item);
+      }
+
+      syncStore();
+      resetForm();
+      alert(`Success! "${name}" is now live on the index.html store.`);
+    }
+
+    function editProd(id) {
+      const prod = products.find(p => p.id === id);
+      if (!prod) return;
+
+      document.getElementById("prod-id").value = prod.id;
+      document.getElementById("prod-name").value = prod.name;
+      document.getElementById("prod-category").value = prod.category;
+      document.getElementById("prod-price").value = prod.price;
+      document.getElementById("prod-stock").value = prod.stock;
+      document.getElementById("prod-sizes").value = (prod.sizes || []).join(", ");
+      document.getElementById("prod-colors").value = (prod.colors || []).join(", ");
+      document.getElementById("prod-designs").value = (prod.designs || []).join(", ");
+      document.getElementById("prod-desc").value = prod.description || "";
+
+      stagedPhotos = [...(prod.images || [])];
+      renderStagedPhotos();
+
+      document.getElementById("form-title").innerText = `Edit: ${prod.name}`;
+      window.scrollTo({ top: 300, behavior: "smooth" });
+    }
+
+    function deleteProd(id) {
+      if (!confirm("Are you sure you want to remove this article?")) return;
+      products = products.filter(p => p.id !== id);
+      syncStore();
+    }
+
+    function resetForm() {
+      document.getElementById("product-form").reset();
+      document.getElementById("prod-id").value = "";
+      document.getElementById("form-title").innerText = "Upload New Article";
+      stagedPhotos = [];
+      renderStagedPhotos();
+    }
+
+    function renderInventory() {
+      document.getElementById("total-prods").innerText = products.length;
+      const container = document.getElementById("inventory-list");
+      container.innerHTML = products.map(p => `
+        <div class="flex items-center justify-between p-3.5 rounded-xl bg-[#0f0f14] border border-white/5">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-lg bg-black overflow-hidden flex items-center justify-center border border-white/10">
+              <img src="${p.images && p.images[0] ? p.images[0] : ''}" class="w-full h-full object-contain" />
+            </div>
+            <div>
+              <p class="font-bold text-white text-xs">${p.name}</p>
+              <p class="text-[10px] text-zinc-400">${p.category} • ৳ ${p.price} • Stock: <span class="${p.stock < 10 ? 'text-red-400':'text-emerald-400'}">${p.stock}</span> • Photos: ${p.images ? p.images.length : 0}</p>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="editProd('${p.id}')" class="px-3 py-1 bg-zinc-800 text-white rounded text-[10px]">Edit</button>
+            <button onclick="deleteProd('${p.id}')" class="px-3 py-1 bg-red-950/40 text-red-400 border border-red-500/20 rounded text-[10px]">Delete</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderOrders() {
+      const container = document.getElementById("orders-list");
+      if (!orders.length) {
+        container.innerHTML = `<p class="text-zinc-500 py-4">No Cash on Delivery orders yet.</p>`;
+        return;
+      }
+
+      container.innerHTML = orders.map(ord => `
+        <div class="p-4 rounded-xl bg-[#0f0f14] border border-white/10 space-y-2">
+          <div class="flex justify-between items-center border-b border-white/5 pb-2">
+            <span class="font-bold text-white">${ord.orderId}</span>
+            <a href="https://wa.me/88${ord.customer.phone.replace(/[^0-9]/g, '')}" target="_blank" class="text-emerald-400 flex items-center gap-1 text-[11px]">
+              <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Chat Customer
+            </a>
+          </div>
+          <div class="text-[11px] text-zinc-300">
+            <p><strong>Customer:</strong> ${ord.customer.name} (${ord.customer.phone})</p>
+            <p><strong>Address:</strong> ${ord.customer.address} [${ord.customer.city === 'inside' ? 'Inside Dhaka' : 'Outside Dhaka'}]</p>
+          </div>
+          <div class="pt-2 border-t border-white/5 flex justify-between text-xs font-bold text-white">
+            <span>Payable COD:</span>
+            <span>৳ ${ord.grandtotal}</span>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function clearOrders() {
+      if (confirm("Reset orders history?")) {
+        orders = [];
+        localStorage.setItem("atnyxen_orders", JSON.stringify(orders));
+        renderOrders();
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      checkAuth();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
+admin.html
